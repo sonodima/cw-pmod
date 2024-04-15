@@ -1,0 +1,31 @@
+[package]
+name = "cw-pmods"
+version = "0.1.0"
+authors = ["sonodima"]
+edition = "2021"
+
+description = "Backend server for the Content Warning: pMOD service"
+homepage = "https://github.com/sonodima/cw-pmod"
+repository = "https://github.com/sonodima/cw-pmod"
+
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+anyhow = "1.0"
+sha2 = "0.10"
+base64 = "0.22"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1.37", features = ["full"] }
+axum = {version = "0.7", features = ["macros"] }
+edgedb-tokio = "0.5"
+edgedb-protocol = "0.6"
+
+
+[profile.release]
+codegen-units = 1
+opt-level = 3
+strip = true
+lto = true

@@ -4,9 +4,11 @@ use axum::{extract::State, http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
 use tracing::error;
 
-use crate::{
-    models,
-    utils::{AppError, QueryParser, Status},
+use crate::{models, utils};
+
+use crate::api::{
+    middleware::QueryParser,
+    response::{AppError, Status},
 };
 
 #[derive(Debug, Deserialize)]
@@ -21,7 +23,7 @@ pub struct GetStateResponse {
     total_reports: usize,
 }
 
-/// Endpoint: /state?steam_id=xxxx
+/// Endpoint: /state?steam_id=[U:1:123456]
 /// Method: GET
 /// ===============================
 /// Queries the informations for a user from the database.
@@ -31,7 +33,12 @@ pub async fn get_state(
     State(db): State<edgedb_tokio::Client>,
     QueryParser(params): QueryParser<GetStateParams>,
 ) -> Result<Json<GetStateResponse>, AppError> {
-    // TODO: add modern text SteamID validation
+    if !utils::is_steamid3(&params.steam_id) {
+        return Err(AppError(
+            StatusCode::BAD_REQUEST,
+            anyhow!("the specified steam_id is not supported"),
+        ));
+    }
 
     // Get all the reports registered for the provided user's steam_id.
     let result = db

@@ -1,5 +1,3 @@
-use std::{net::IpAddr, str::FromStr};
-
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
@@ -7,14 +5,14 @@ use axum::{
 };
 
 use anyhow::anyhow;
-use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 use tracing::warn;
 
-use crate::{
-    models::Reason,
-    utils::{AppError, JsonParser, Status},
+use crate::{models::Reason, utils};
+
+use crate::api::{
+    middleware::JsonParser,
+    response::{AppError, Status},
 };
 
 #[derive(Debug, Deserialize)]
@@ -38,9 +36,14 @@ pub async fn post_report(
     State(db): State<edgedb_tokio::Client>,
     JsonParser(payload): JsonParser<ReportPayload>,
 ) -> Result<Json<ReportResponse>, AppError> {
-    // TODO: add modern text SteamID validation
+    if !utils::is_steamid3(&payload.steam_id) {
+        return Err(AppError(
+            StatusCode::BAD_REQUEST,
+            anyhow!("the specified steam_id is not supported"),
+        ));
+    }
 
-    if let Some(hash) = extract_source_hash(&headers) {
+    if let Some(hash) = utils::extract_source_hash(&headers) {
         if let Err(err) = db
             .execute(
                 // TODO: improve once the support for using Enums as
@@ -80,21 +83,4 @@ pub async fn post_report(
             anyhow!("the request is missing some required fields"),
         ))
     }
-}
-
-/// Extracts the client's IP Address from CloudFlare's CF-Connecting-IP
-/// HTTP header, and generates a BASE64 SHA256 hash with it.
-///
-/// Of course this makes the assumption that the service is hosted
-/// behind CloudFlare. :)
-fn extract_source_hash(headers: &HeaderMap) -> Option<String> {
-    headers
-        .get("CF-Connecting-IP")
-        .filter(|ip| IpAddr::from_str(ip.to_str().unwrap_or_default()).is_ok())
-        .map(|ip| {
-            let mut hasher = Sha256::new();
-            hasher.update(ip.as_bytes());
-            let hash = hasher.finalize();
-            BASE64_STANDARD.encode(&hash)
-        })
 }

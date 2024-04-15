@@ -37,10 +37,10 @@ async fn run(cli: &Cli) -> Result<()> {
     info!("edgedb client connected successfully");
 
     let app = Router::new()
-        .route("/state", get(api::get_state))
-        .route("/report", post(api::post_report))
+        .route("/state", get(api::handlers::get_state))
+        .route("/report", post(api::handlers::post_report))
         .with_state(db)
-        .fallback(api::not_found);
+        .fallback(api::handlers::not_found);
 
     let listener = TcpListener::bind(&cli.address)
         .await

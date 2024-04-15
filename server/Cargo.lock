@@ -363,6 +363,7 @@ dependencies = [
  "clap",
  "edgedb-protocol",
  "edgedb-tokio",
+ "regex",
  "serde",
  "serde_json",
  "sha2",

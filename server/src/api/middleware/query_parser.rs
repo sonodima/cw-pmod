@@ -6,7 +6,7 @@ use axum::{
 
 use anyhow::anyhow;
 
-use super::AppError;
+use crate::api::response::AppError;
 
 pub struct QueryParser<T>(pub T);
 

@@ -22,6 +22,7 @@ tokio = { version = "1.37", features = ["full"] }
 axum = {version = "0.7", features = ["macros"] }
 edgedb-tokio = "0.5"
 edgedb-protocol = "0.6"
+regex = "1.10.4"
 
 
 [profile.release]

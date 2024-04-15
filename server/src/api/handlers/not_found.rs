@@ -1,7 +1,7 @@
 use anyhow::anyhow;
 use axum::http::StatusCode;
 
-use crate::utils::AppError;
+use crate::api::response::AppError;
 
 pub async fn not_found() -> AppError {
     AppError(
